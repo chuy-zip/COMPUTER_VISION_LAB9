@@ -9,16 +9,23 @@ import cv2
 import time
 from ultralytics import YOLO
 
-# Modelo: YOLOv8n (nano) pre-entrenado para mientras solo de prueba
-MODEL_PATH = "yolov8n.pt"
+#referencia del modelo del cual se obtuvieron los pesos:
+# https://universe.roboflow.com/aaron-qwuzu/pokemon-cards-63wlp
+
+
+# Modelo: YOLOv8 fine-tuned en dataset de cartas Pokémon TCG obtenido de roboflow
+# los pesos fueron obtenidos entrenando sobre el dataset pokemon-cards-63wlp v5 en Google Colab el jupyter se encuentra aquí en el repo
+MODEL_PATH = "weights/best.pt"
 
 # Hiperparámetros de inferencia se elige una confianza minim que sirve para aceptar una deteccion
-# 
+# tambien se tiene un umbral para suprimir cajas con IoU
 CONF_THRESHOLD = 0.5   # Confianza mínima para aceptar una detección
-IOU_THRESHOLD  = 0.45  # Umbral NMS: suprime cajas con IoU >= este valor
+IOU_THRESHOLD  = 0.45 
 
-# la fuente de vide si es 0 = webcam principa, para usar MP4 cuando esté disponible: cambiar a "ruta/al/video.mp4"
-VIDEO_SOURCE = 0
+# la fuente de video es un MP4 de cartas Pokémon TCG, especificamente es un video de apertura de cartas
+# del canal de youtube https://www.youtube.com/@ShortPocketMonster, el enlace al video usado es https://www.youtube.com/shorts/BcpV2dgmznk
+# Para volver a webcam: cambiar a 0
+VIDEO_SOURCE = "video/cards.mp4"
 
 # Colores BGR para las cajas y texto
 COLOR_BOX  = (0, 255, 0)    
@@ -36,6 +43,7 @@ while True:
     if not ret:
         break
 
+    frame = cv2.resize(frame, (480, 854)) 
     # inferencia y medicion fps
     t_start = time.time()
     results  = model(frame, conf=CONF_THRESHOLD, iou=IOU_THRESHOLD, verbose=False)
@@ -69,7 +77,7 @@ while True:
     cv2.putText(frame, f"FPS: {fps:.1f}", (10, 35),
                 cv2.FONT_HERSHEY_SIMPLEX, 1.0, COLOR_FPS, 2, cv2.LINE_AA)
 
-    cv2.imshow("Pokedex CV - COCO | presiona Q para salir", frame)
+    cv2.imshow("Pokedex CV - Pokemon TCG | presiona Q para salir", frame)
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
